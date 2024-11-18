@@ -31,12 +31,12 @@
                 color: white;
             }
             .content p {
-                margin-top: 0.5em;
+                margin-top: 0em;
                 margin-bottom: 1.5em;
                 font-size: 1.25em;
             }
             .content h1 {
-                margin: 0;
+                margin-bottom: 0.5rem;
                 font-size: 3em;
             }
             .content .button {
@@ -80,8 +80,11 @@
                 Blobs.<br />The entire image finally gets some film grain
                 applied to it to avoid color banding.
             </p>
+            <p>
+                Update 1: Now with better performance and easier customization!
+            </p>
             <a
-                href="https://github.com/realRobotix/BloBG/blob/master/src/blob.glsl"
+                href="https://github.com/realRobotix/BloBG/blob/master/src/blob.frag"
                 class="button"
                 >View the Shader</a
             >
@@ -104,7 +107,7 @@
         }`;
 
             let fragmentShaderSource;
-            fetch("blob.glsl")
+            fetch("blob.frag")
                 .then((response) => response.text())
                 .then((data) => {
                     fragmentShaderSource = data;
@@ -150,6 +153,9 @@
                         0,
                         0
                     );
+
+                    gl.enable(gl.BLEND);
+                    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
                     function resizeCanvasToDisplaySize(canvas) {
                         const displayWidth = canvas.clientWidth;
@@ -215,76 +221,6 @@
                 console.error(gl.getProgramInfoLog(program));
                 gl.deleteProgram(program);
             }
-
-            const vertexShader = createShader(
-                gl,
-                gl.VERTEX_SHADER,
-                vertexShaderSource
-            );
-            const fragmentShader = createShader(
-                gl,
-                gl.FRAGMENT_SHADER,
-                fragmentShaderSource
-            );
-            const program = createProgram(gl, vertexShader, fragmentShader);
-
-            const positionAttributeLocation = gl.getAttribLocation(
-                program,
-                "a_position"
-            );
-            const positionBuffer = gl.createBuffer();
-            gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-            const positions = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
-            gl.bufferData(
-                gl.ARRAY_BUFFER,
-                new Float32Array(positions),
-                gl.STATIC_DRAW
-            );
-
-            const vao = gl.createVertexArray();
-            gl.bindVertexArray(vao);
-            gl.enableVertexAttribArray(positionAttributeLocation);
-            gl.vertexAttribPointer(
-                positionAttributeLocation,
-                2,
-                gl.FLOAT,
-                false,
-                0,
-                0
-            );
-
-            function resizeCanvasToDisplaySize(canvas) {
-                const displayWidth = canvas.clientWidth;
-                const displayHeight = canvas.clientHeight;
-                if (
-                    canvas.width !== displayWidth ||
-                    canvas.height !== displayHeight
-                ) {
-                    canvas.width = displayWidth;
-                    canvas.height = displayHeight;
-                }
-            }
-
-            function render(time) {
-                resizeCanvasToDisplaySize(canvas);
-                gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-                gl.clear(gl.COLOR_BUFFER_BIT);
-                gl.useProgram(program);
-                gl.bindVertexArray(vao);
-                gl.uniform2f(
-                    gl.getUniformLocation(program, "iResolution"),
-                    gl.canvas.width,
-                    gl.canvas.height
-                );
-                gl.uniform1f(
-                    gl.getUniformLocation(program, "iTime"),
-                    time * 0.001
-                );
-                gl.drawArrays(gl.TRIANGLES, 0, 6);
-                requestAnimationFrame(render);
-            }
-
-            requestAnimationFrame(render);
         </script>
     </body>
 </html>
